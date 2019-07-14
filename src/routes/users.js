@@ -1,6 +1,6 @@
 const Router = require('koa-router')
 const users = new Router()
-
+const bcrypt = require('bcrypt')
 const models = require('../models')
 
 users.get('/', async (ctx, next) => {
@@ -11,21 +11,28 @@ users.get('/', async (ctx, next) => {
 })
 
 users.get('/:id', async (ctx, next) => {
-  const user = await models.user.findById(ctx.params.id)
+  const user = await models.user.findByPk(ctx.params.id)
 
   ctx.body = user
   await next()
 })
 
 users.post('/', async (ctx, next) => {
-  const user = await models.user.create(ctx.request.body)
+  let {
+    body
+  } = ctx.request
+
+  const salt = bcrypt.genSaltSync(parseInt(process.env.SALT_WORK_FACTOR))
+  body.pass = bcrypt.hashSync(body.pass, salt)
+
+  const user = await models.user.create(body)
 
   ctx.body = user
   await next()
 })
 
-users.patch('/:id', async (ctx, next) => {
-  const user = await models.user.findById(ctx.params.id)
+users.put('/:id', async (ctx, next) => {
+  const user = await models.user.findByPk(ctx.params.id)
   const updatedUser = await user.update(ctx.request.body)
 
   ctx.body = updatedUser
@@ -33,7 +40,7 @@ users.patch('/:id', async (ctx, next) => {
 })
 
 users.delete('/:id', async (ctx, next) => {
-  const user = await models.user.findById(ctx.params.id)
+  const user = await models.user.findByPk(ctx.params.id)
   const deleted = await user.destroy()
 
   ctx.body = deleted
