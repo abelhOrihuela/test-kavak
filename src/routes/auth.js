@@ -2,7 +2,7 @@ const Router = require('koa-router')
 const auth = new Router()
 const bcrypt = require('bcrypt')
 const models = require('../models')
-
+const jwt = require('../config/jwt')
 auth.post('/login', async (ctx, next) => {
   let {
     email,
@@ -19,7 +19,33 @@ auth.post('/login', async (ctx, next) => {
 
   ctx.assert(isValid, 404, 'Contraseña incorrecta')
 
-  ctx.body = user
+  var token = jwt.sign({ email: email })
+
+  ctx.body = {
+    me: user,
+    token: token
+  }
+  ctx.status = 200
+  await next()
+})
+
+auth.post('/register', async (ctx, next) => {
+  let {
+    body
+  } = ctx.request
+
+  const salt = bcrypt.genSaltSync(parseInt(process.env.SALT_WORK_FACTOR))
+  body.pass = bcrypt.hashSync(body.pass, salt)
+
+  let user
+  try {
+    user = await models.user.create(body)
+    ctx.body = user
+    ctx.status = 200
+  } catch (error) {
+    ctx.body = error.errors.map(l => l.message)
+    ctx.status = 500
+  }
   await next()
 })
 

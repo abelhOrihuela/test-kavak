@@ -3,38 +3,45 @@ const attachments = new Router()
 
 const models = require('../models')
 
-attachments.get('/', async (ctx, next) => {
-  const allUsers = await models.attachment.findAll()
+attachments.get('/:task/attachments/', async (ctx, next) => {
+  const task = await models.task.findByPk(ctx.params.id)
+  ctx.assert(task, 404, 'Tarea no encontrado')
 
-  ctx.body = allUsers
+  const allAttachments = await models.attachment.findAll({
+    where: { id_task: ctx.params.task }
+  })
+  ctx.body = allAttachments
   await next()
 })
 
-attachments.get('/:id', async (ctx, next) => {
-  const user = await models.attachment.findById(ctx.params.id)
+attachments.get('/:task/attachments/:id', async (ctx, next) => {
+  const attachment = await models.attachment.findByPk(ctx.params.id)
+  ctx.assert(attachment, 404, 'Archivo no encontrado')
 
-  ctx.body = user
+  ctx.body = attachment
   await next()
 })
 
-attachments.post('/', async (ctx, next) => {
-  const user = await models.attachment.create(ctx.request.body)
+attachments.post('/:task/attachments/', async (ctx, next) => {
+  const attachment = await models.attachment.create(ctx.request.body)
 
-  ctx.body = user
+  ctx.body = attachment
   await next()
 })
 
-attachments.patch('/:id', async (ctx, next) => {
-  const user = await models.attachment.findById(ctx.params.id)
-  const updatedUser = await user.update(ctx.request.body)
+attachments.patch('/:task/attachments/:id', async (ctx, next) => {
+  const attachment = await models.attachment.findByPk(ctx.params.id)
+  ctx.assert(attachment, 404, 'Archivo no encontrado')
+  const updatedUser = await attachment.update(ctx.request.body)
 
   ctx.body = updatedUser
   await next()
 })
 
-attachments.delete('/:id', async (ctx, next) => {
-  const user = await models.attachment.findById(ctx.params.id)
-  const deleted = await user.destroy()
+attachments.delete('/:task/attachments/:id', async (ctx, next) => {
+  const attachment = await models.attachment.findByPk(ctx.params.id)
+  ctx.assert(attachment, 404, 'Archivo no encontrado')
+  const deleted = await attachment.destroy()
 
   ctx.body = deleted
   await next()
