@@ -11,7 +11,7 @@ tasks.get('/', async (ctx, next) => {
 })
 
 tasks.get('/search/tags', async (ctx, next) => {
-  let validFields = ['name', 'status', 'user']
+  let validFields = ['name', 'status', 'id_user']
 
   let filters = {}
   let sortBy = []
@@ -52,12 +52,13 @@ tasks.get('/:id', async (ctx, next) => {
 
 tasks.post('/', async (ctx, next) => {
   const {
-    body
-  } = ctx.request
+    request: { body },
+    state: { user }
+  } = ctx
 
   const validations = lov.validate(body, {
     name: lov.string().required(),
-    description: lov.string().required(),
+    status: lov.string().required(),
     expiration_date: lov.string().required()
   })
 
@@ -66,9 +67,8 @@ tasks.post('/', async (ctx, next) => {
   }
 
   const task = await models.task.create({
-    name: body.name,
-    description: body.description,
-    expiration_date: body.expiration_date
+    ...body,
+    id_user: user.id
   })
 
   ctx.body = task
@@ -78,15 +78,18 @@ tasks.post('/', async (ctx, next) => {
 
 tasks.patch('/:id', async (ctx, next) => {
   const {
-    body
-  } = ctx.request
+    request: { body },
+    state: { user }
+  } = ctx
+
   const task = await models.task.findByPk(ctx.params.id)
   ctx.assert(task, 404, 'Tarea no encontrado')
 
   const validations = lov.validate(body, {
     name: lov.string().required(),
-    description: lov.string().required(),
-    expiration_date: lov.string().required()
+    status: lov.string().required(),
+    expiration_date: lov.string().required(),
+    id_user: user.id
   })
 
   if (validations.error) {
