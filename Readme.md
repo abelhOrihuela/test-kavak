@@ -9,7 +9,7 @@ npm install standard --global
 npm install
 ```
 
-Yo need add credentials to connect DB, This configurations initialize tables for DB
+You need add credentials to connect DB, This configurations initialize tables for DB
 
 ```
 DB_HOST=localhost
