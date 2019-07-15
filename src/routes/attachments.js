@@ -1,16 +1,16 @@
 const Router = require('koa-router')
 const fs = require('fs-extra')
 const attachments = new Router()
-const models = require('../models')
+const { task, attachment } = require('../models')
 const formidable = require('formidable')
 
 attachments.get('/:task/attachments', async (ctx, next) => {
-  const task = await models.task.findByPk(ctx.params.task)
+  const taskDetail = await task.findByPk(ctx.params.task)
 
   console.log('ctx.params', ctx.params)
-  ctx.assert(task, 404, 'Tarea no encontrada')
+  ctx.assert(taskDetail, 404, 'Tarea no encontrada')
 
-  const allAttachments = await models.attachment.findAll({
+  const allAttachments = await attachment.findAll({
     where: { id_task: ctx.params.task }
   })
   ctx.body = allAttachments
@@ -18,10 +18,10 @@ attachments.get('/:task/attachments', async (ctx, next) => {
 })
 
 attachments.get('/:task/attachments/:id', async (ctx, next) => {
-  const attachment = await models.attachment.findByPk(ctx.params.id)
-  ctx.assert(attachment, 404, 'Archivo no encontrado')
+  const attachmentDetail = await attachment.findByPk(ctx.params.id)
+  ctx.assert(attachmentDetail, 404, 'Archivo no encontrado')
 
-  ctx.body = attachment
+  ctx.body = attachmentDetail
   await next()
 })
 
@@ -29,8 +29,8 @@ attachments.post('/:task/attachments/', async (ctx, next) => {
   const translationsPath = './public'
   await fs.ensureDir(translationsPath)
 
-  const task = await models.task.findByPk(parseInt(ctx.params.task))
-  ctx.assert(task, 404, 'Tarea no encontrada')
+  const taskDetail = await task.findByPk(parseInt(ctx.params.task))
+  ctx.assert(taskDetail, 404, 'Tarea no encontrada')
 
   const form = new formidable.IncomingForm()
   await new Promise((resolve, reject) => {
@@ -61,18 +61,18 @@ attachments.post('/:task/attachments/', async (ctx, next) => {
     url: url,
     id_task: task.id
   }
-  const attachment = await models.attachment.create(attachmentData)
+  const attachmentDetail = await attachment.create(attachmentData)
 
-  ctx.body = attachment
+  ctx.body = attachmentDetail
   await next()
 })
 
 attachments.delete('/:task/attachments/:id', async (ctx, next) => {
-  const attachment = await models.attachment.findByPk(ctx.params.id)
-  ctx.assert(attachment, 404, 'Archivo no encontrado')
-  const deleted = await attachment.destroy()
+  const attachmentDetail = await attachment.findByPk(ctx.params.id)
+  ctx.assert(attachmentDetail, 404, 'Archivo no encontrado')
+  const deleted = await attachmentDetail.destroy()
 
-  fs.remove(attachment.url)
+  fs.remove(attachmentDetail.url)
 
   ctx.body = deleted
   await next()

@@ -1,7 +1,7 @@
 const Router = require('koa-router')
 const auth = new Router()
 const bcrypt = require('bcrypt')
-const models = require('../models')
+const { user } = require('../models')
 const jwt = require('../config/jwt')
 const lov = require('lov')
 
@@ -19,21 +19,21 @@ auth.post('/login', async (ctx, next) => {
     return ctx.throw(422, validations.error.message)
   }
 
-  const user = await models.user.findOne({ where: { email: body.email } })
-  ctx.assert(user, 400, 'Usuario no encontrado')
+  const userDetail = await user.findOne({ where: { email: body.email } })
+  ctx.assert(userDetail, 400, 'Usuario no encontrado')
 
   let isValid = await new Promise((resolve, reject) => {
-    bcrypt.compare(body.password, user.password, (err, compared) =>
+    bcrypt.compare(body.password, userDetail.password, (err, compared) =>
       (err ? reject(err) : resolve(compared))
     )
   })
 
   ctx.assert(isValid, 400, 'Contraseña incorrecta')
 
-  var token = jwt.sign({ email: user.email })
+  var token = jwt.sign({ email: userDetail.email })
 
   ctx.body = {
-    me: user,
+    me: userDetail,
     token: token
   }
   ctx.status = 200
@@ -59,10 +59,10 @@ auth.post('/register', async (ctx, next) => {
   const salt = bcrypt.genSaltSync(parseInt(process.env.SALT_WORK_FACTOR))
   body.password = bcrypt.hashSync(body.password, salt)
 
-  let user
+  let userDetail
   try {
-    user = await models.user.create(body)
-    ctx.body = user
+    userDetail = await user.create(body)
+    ctx.body = userDetail
     ctx.status = 200
   } catch (error) {
     ctx.body = error.errors.map(l => l.message)

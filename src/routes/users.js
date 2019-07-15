@@ -1,10 +1,10 @@
 const Router = require('koa-router')
 const users = new Router()
-const models = require('../models')
+const { user } = require('../models')
 const lov = require('lov')
 
 users.get('/', async (ctx, next) => {
-  const allUsers = await models.user.findAll()
+  const allUsers = await user.findAll()
 
   ctx.body = allUsers
   ctx.status = 200
@@ -12,16 +12,16 @@ users.get('/', async (ctx, next) => {
 })
 
 users.get('/:id', async (ctx, next) => {
-  const user = await models.user.findByPk(ctx.params.id)
-  ctx.assert(user, 404, 'Usuario no encontrado')
-  ctx.body = user
+  const userDetail = await user.findByPk(ctx.params.id)
+  ctx.assert(userDetail, 404, 'Usuario no encontrado')
+  ctx.body = userDetail
   ctx.status = 200
   await next()
 })
 
 users.put('/:id', async (ctx, next) => {
-  const user = await models.user.findByPk(ctx.params.id)
-  ctx.assert(user, 404, 'Usuario no encontrado')
+  const userDetail = await user.findByPk(ctx.params.id)
+  ctx.assert(userDetail, 404, 'Usuario no encontrado')
 
   let {
     body
@@ -38,7 +38,7 @@ users.put('/:id', async (ctx, next) => {
     return ctx.throw(422, validations.error.message)
   }
 
-  const updatedUser = await user.update(body)
+  const updatedUser = await userDetail.update(body)
 
   ctx.body = updatedUser
   ctx.status = 200
@@ -46,9 +46,9 @@ users.put('/:id', async (ctx, next) => {
 })
 
 users.delete('/:id', async (ctx, next) => {
-  const user = await models.user.findByPk(ctx.params.id)
-  ctx.assert(user, 404, 'Usuario no encontrado')
-  const deleted = await user.destroy()
+  const userDetail = await user.findByPk(ctx.params.id)
+  ctx.assert(userDetail, 404, 'Usuario no encontrado')
+  const deleted = await userDetail.destroy()
 
   ctx.body = deleted
   ctx.status = 200

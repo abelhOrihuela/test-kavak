@@ -1,10 +1,10 @@
 const Router = require('koa-router')
 const tasks = new Router()
-const models = require('../models')
+const { task } = require('../models')
 const lov = require('lov')
 
 tasks.get('/', async (ctx, next) => {
-  const allTasks = await models.task.findAll()
+  const allTasks = await task.findAll()
 
   ctx.body = allTasks
   await next()
@@ -32,7 +32,7 @@ tasks.get('/search/tags', async (ctx, next) => {
     ])
   }
 
-  const allTasks = await models.task.findAll({
+  const allTasks = await task.findAll({
     where: filters,
     order: sortBy
   })
@@ -42,10 +42,10 @@ tasks.get('/search/tags', async (ctx, next) => {
 })
 
 tasks.get('/:id', async (ctx, next) => {
-  const task = await models.task.findByPk(ctx.params.id)
-  ctx.assert(task, 404, 'Tarea no encontrado')
+  const taskDetail = await task.findByPk(ctx.params.id)
+  ctx.assert(taskDetail, 404, 'Tarea no encontrado')
 
-  ctx.body = task
+  ctx.body = taskDetail
   ctx.status = 200
   await next()
 })
@@ -66,12 +66,12 @@ tasks.post('/', async (ctx, next) => {
     return ctx.throw(422, validations.error.message)
   }
 
-  const task = await models.task.create({
+  const taskDetail = await task.create({
     ...body,
     id_user: user.id
   })
 
-  ctx.body = task
+  ctx.body = taskDetail
   ctx.status = 200
   await next()
 })
@@ -82,8 +82,8 @@ tasks.patch('/:id', async (ctx, next) => {
     state: { user }
   } = ctx
 
-  const task = await models.task.findByPk(ctx.params.id)
-  ctx.assert(task, 404, 'Tarea no encontrado')
+  const taskDetail = await task.findByPk(ctx.params.id)
+  ctx.assert(taskDetail, 404, 'Tarea no encontrado')
 
   const validations = lov.validate(body, {
     name: lov.string().required(),
@@ -104,9 +104,9 @@ tasks.patch('/:id', async (ctx, next) => {
 })
 
 tasks.delete('/:id', async (ctx, next) => {
-  const task = await models.task.findByPk(ctx.params.id)
-  ctx.assert(task, 404, 'Tarea no encontrado')
-  const deleted = await task.destroy()
+  const taskDetail = await task.findByPk(ctx.params.id)
+  ctx.assert(taskDetail, 404, 'Tarea no encontrado')
+  const deleted = await taskDetail.destroy()
 
   ctx.body = deleted
   ctx.status = 200

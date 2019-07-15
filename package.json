@@ -2,11 +2,11 @@
   "name": "koa-test",
   "version": "1.0.0",
   "description": "Koa test",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "api-server": "node server.js"
   },
-  "author": "",
+  "author": "abelorihuelamendoza@hotmail.com",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^3.0.0",
