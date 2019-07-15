@@ -3,23 +3,34 @@ const auth = new Router()
 const bcrypt = require('bcrypt')
 const models = require('../models')
 const jwt = require('../config/jwt')
+const lov = require('lov')
+
 auth.post('/login', async (ctx, next) => {
-  let {
-    email,
-    password
-  } = ctx.request.body
-  const user = await models.user.findOne({ where: { email } })
-  ctx.assert(user, 404, 'Usuario no encontrado')
+  const {
+    body
+  } = ctx.request
+
+  const validations = lov.validate(body, {
+    email: lov.string().required(),
+    password: lov.string().required()
+  })
+
+  if (validations.error) {
+    return ctx.throw(422, validations.error.message)
+  }
+
+  const user = await models.user.findOne({ where: { email: body.email } })
+  ctx.assert(user, 400, 'Usuario no encontrado')
 
   let isValid = await new Promise((resolve, reject) => {
-    bcrypt.compare(password, user.pass, (err, compared) =>
+    bcrypt.compare(body.password, user.password, (err, compared) =>
       (err ? reject(err) : resolve(compared))
     )
   })
 
-  ctx.assert(isValid, 404, 'Contraseña incorrecta')
+  ctx.assert(isValid, 400, 'Contraseña incorrecta')
 
-  var token = jwt.sign({ email: email })
+  var token = jwt.sign({ email: user.email })
 
   ctx.body = {
     me: user,
@@ -34,8 +45,19 @@ auth.post('/register', async (ctx, next) => {
     body
   } = ctx.request
 
+  const validations = lov.validate(body, {
+    firstname: lov.string().required(),
+    lastname: lov.string().required(),
+    email: lov.string().required(),
+    password: lov.string().required()
+  })
+
+  if (validations.error) {
+    return ctx.throw(422, validations.error.message)
+  }
+
   const salt = bcrypt.genSaltSync(parseInt(process.env.SALT_WORK_FACTOR))
-  body.pass = bcrypt.hashSync(body.pass, salt)
+  body.password = bcrypt.hashSync(body.password, salt)
 
   let user
   try {

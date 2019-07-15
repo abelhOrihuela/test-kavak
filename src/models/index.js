@@ -21,7 +21,7 @@ let User = sequelize.define('users', {
     type: Sequelize.STRING,
     unique: true
   },
-  pass: Sequelize.STRING
+  password: Sequelize.STRING
 })
 
 let Task = sequelize.define('tasks', {

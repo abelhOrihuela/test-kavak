@@ -1,6 +1,7 @@
 const Router = require('koa-router')
 const users = new Router()
 const models = require('../models')
+const lov = require('lov')
 
 users.get('/', async (ctx, next) => {
   const allUsers = await models.user.findAll()
@@ -21,7 +22,23 @@ users.get('/:id', async (ctx, next) => {
 users.put('/:id', async (ctx, next) => {
   const user = await models.user.findByPk(ctx.params.id)
   ctx.assert(user, 404, 'Usuario no encontrado')
-  const updatedUser = await user.update(ctx.request.body)
+
+  let {
+    body
+  } = ctx.request
+
+  const validations = lov.validate(body, {
+    firstname: lov.string().required(),
+    lastname: lov.string().required(),
+    email: lov.string().required(),
+    password: lov.string().required()
+  })
+
+  if (validations.error) {
+    return ctx.throw(422, validations.error.message)
+  }
+
+  const updatedUser = await user.update(body)
 
   ctx.body = updatedUser
   ctx.status = 200
