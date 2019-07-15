@@ -31,7 +31,8 @@ let Task = sequelize.define('tasks', {
     primaryKey: true
   },
   name: Sequelize.STRING,
-  description: Sequelize.STRING
+  description: Sequelize.STRING,
+  expiration_date: Sequelize.DATE
 })
 
 let Attachment = sequelize.define('attachment', {
@@ -40,7 +41,6 @@ let Attachment = sequelize.define('attachment', {
     autoIncrement: true,
     primaryKey: true
   },
-  name: Sequelize.STRING,
   url: Sequelize.STRING,
   id_task: { type: Sequelize.SMALLINT, foreignKey: true }
 })
