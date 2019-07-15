@@ -24,6 +24,12 @@ let User = sequelize.define('users', {
   password: Sequelize.STRING
 })
 
+User.prototype.toJSON = function () {
+  let values = Object.assign({}, this.get())
+  delete values.password
+  return values
+}
+
 let Task = sequelize.define('tasks', {
   id: {
     type: Sequelize.SMALLINT,
